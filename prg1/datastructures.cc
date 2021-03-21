@@ -51,7 +51,7 @@ void Datastructures::clear_all()
 std::vector<PlaceID> Datastructures::all_places()
 {
     // Replace this comment with your implementation
-    return { placeids };
+    return { placeidsName_ };
 }
 
 bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coord xy)
@@ -66,14 +66,21 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
         place.coord = xy;
 
         id_.insert(std::make_pair(id, place));
-        placeids.push_back(id);
+        placeidsName_.push_back(id);
+        placeidsCoord_.push_back(id);
+        sortedCoord_ = false;
+        sortedAlpha_ = false;
         return true;
     }
 }
 
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
 {
-    return { id_.at(id).name, id_.at(id).type };
+    auto search = id_.find(id);
+    if (search != id_.end()) {
+        return { id_.at(id).name, id_.at(id).type };
+    }
+    return { NO_NAME, PlaceType::NO_TYPE };
 }
 
 Coord Datastructures::get_place_coord(PlaceID id)
@@ -113,41 +120,66 @@ void Datastructures::creation_finished()
 
 std::vector<PlaceID> Datastructures::places_alphabetically()
 {
-    sort(placeids.begin(), placeids.end(), [=](PlaceID a, PlaceID b) { return id_.at(a).name < id_.at(b).name; });
-    return placeids;
+    if (!sortedAlpha_) {
+        sort(placeidsName_.begin(), placeidsName_.end(), [=](PlaceID a, PlaceID b) { return id_.at(a).name < id_.at(b).name; });
+        sortedAlpha_ = true;
+    }
+    return placeidsName_;
 }
 
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
-
-    sort(placeids.begin(), placeids.end(), [=](PlaceID a, PlaceID b) {
-        return my_cmp(a, b);
-    });
-    return placeids;
+    if (!sortedCoord_) {
+        sort(placeidsCoord_.begin(), placeidsCoord_.end(), [=](PlaceID a, PlaceID b) {
+            return coordCompare(a, b);
+        });
+    }
+    return placeidsCoord_;
 }
 
 std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
 {
-    // Replace this comment with your implementation
-    return {};
+    std::vector<PlaceID> places;
+    for (auto& it : id_) {
+        if (it.second.name == name) {
+            places.push_back(it.first);
+        }
+    }
+    return places;
 }
 
 std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
 {
-    // Replace this comment with your implementation
-    return {};
+    std::vector<PlaceID> places;
+    for (auto& it : id_) {
+        if (it.second.type == type) {
+            places.push_back(it.first);
+        }
+    }
+    return places;
 }
 
 bool Datastructures::change_place_name(PlaceID id, const Name& newname)
 {
-    // Replace this comment with your implementation
-    return false;
+
+    auto search = id_.find(id);
+    if (search != id_.end()) {
+        id_.at(id).name = newname;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool Datastructures::change_place_coord(PlaceID id, Coord newcoord)
 {
-    // Replace this comment with your implementation
-    return false;
+    auto search = id_.find(id);
+    if (search != id_.end()) {
+        id_.at(id).coord = newcoord;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 std::vector<AreaID> Datastructures::all_areas()
@@ -192,7 +224,7 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
     return NO_AREA;
 }
 
-bool Datastructures::my_cmp(PlaceID a, PlaceID b)
+bool Datastructures::coordCompare(PlaceID a, PlaceID b)
 {
     bool comp;
     if (sqrt(pow(id_.at(a).coord.x, 2) + pow(id_.at(a).coord.y, 2)) == sqrt(pow(id_.at(b).coord.x, 2) + pow(id_.at(b).coord.y, 2))) {

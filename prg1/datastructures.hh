@@ -194,12 +194,16 @@ public:
     // Short rationale for estimate:
     AreaID common_area_of_subareas(AreaID id1, AreaID id2);
 
-    bool my_cmp(PlaceID a, PlaceID b);
+    bool coordCompare(PlaceID a, PlaceID b);
 
 private:
     // Add stuff needed for your class implementation here
     std::unordered_map<PlaceID, Place> id_;
-    std::vector<PlaceID> placeids;
+    std::vector<PlaceID> placeidsName_;
+    std::vector<PlaceID> placeidsCoord_;
+
+    bool sortedCoord_ = false;
+    bool sortedAlpha_ = false;
 };
 
 #endif // DATASTRUCTURES_HH
