@@ -40,7 +40,7 @@ Datastructures::~Datastructures()
 int Datastructures::place_count()
 {
     // Replace this comment with your implementation
-    return id_.size();
+    return placeMap.size();
 }
 
 void Datastructures::clear_all()
@@ -56,8 +56,8 @@ std::vector<PlaceID> Datastructures::all_places()
 
 bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coord xy)
 {
-    auto search = id_.find(id);
-    if (search != id_.end()) {
+    auto search = placeMap.find(id);
+    if (search != placeMap.end()) {
         return false;
     } else {
         Place place;
@@ -65,7 +65,7 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
         place.type = type;
         place.coord = xy;
 
-        id_.insert(std::make_pair(id, place));
+        placeMap.insert(std::make_pair(id, place));
         placeidsName_.push_back(id);
         placeidsCoord_.push_back(id);
         sortedCoord_ = false;
@@ -76,18 +76,18 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
 
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
 {
-    auto search = id_.find(id);
-    if (search != id_.end()) {
-        return { id_.at(id).name, id_.at(id).type };
+    auto search = placeMap.find(id);
+    if (search != placeMap.end()) {
+        return { placeMap.at(id).name, placeMap.at(id).type };
     }
     return { NO_NAME, PlaceType::NO_TYPE };
 }
 
 Coord Datastructures::get_place_coord(PlaceID id)
 {
-    auto search = id_.find(id);
-    if (search != id_.end()) {
-        return id_.at(id).coord;
+    auto search = placeMap.find(id);
+    if (search != placeMap.end()) {
+        return placeMap.at(id).coord;
     } else {
         return NO_COORD;
     }
@@ -95,20 +95,39 @@ Coord Datastructures::get_place_coord(PlaceID id)
 
 bool Datastructures::add_area(AreaID id, const Name& name, std::vector<Coord> coords)
 {
-    // Replace this comment with your implementation
+    auto search = areaMap.find(id);
+    if (search != areaMap.end()) {
+        return false;
+    } else {
+        Area area;
+        area.name = name;
+        area.coords = coords;
+        areaMap.insert(std::make_pair(id, area));
+        areaids.push_back(id);
+
+        return true;
+    }
     return false;
 }
 
 Name Datastructures::get_area_name(AreaID id)
 {
-    // Replace this comment with your implementation
-    return NO_NAME;
+    auto search = areaMap.find(id);
+    if (search != areaMap.end()) {
+        return areaMap.at(id).name;
+    } else {
+        return NO_NAME;
+    }
 }
 
 std::vector<Coord> Datastructures::get_area_coords(AreaID id)
 {
-    // Replace this comment with your implementation
-    return { NO_COORD };
+    auto search = areaMap.find(id);
+    if (search != areaMap.end()) {
+        return areaMap.at(id).coords;
+    } else {
+        return { NO_COORD };
+    }
 }
 
 void Datastructures::creation_finished()
@@ -121,7 +140,7 @@ void Datastructures::creation_finished()
 std::vector<PlaceID> Datastructures::places_alphabetically()
 {
     if (!sortedAlpha_) {
-        sort(placeidsName_.begin(), placeidsName_.end(), [=](PlaceID a, PlaceID b) { return id_.at(a).name < id_.at(b).name; });
+        sort(placeidsName_.begin(), placeidsName_.end(), [=](PlaceID a, PlaceID b) { return placeMap.at(a).name < placeMap.at(b).name; });
         sortedAlpha_ = true;
     }
     return placeidsName_;
@@ -140,7 +159,7 @@ std::vector<PlaceID> Datastructures::places_coord_order()
 std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
 {
     std::vector<PlaceID> places;
-    for (auto& it : id_) {
+    for (auto& it : placeMap) {
         if (it.second.name == name) {
             places.push_back(it.first);
         }
@@ -151,7 +170,7 @@ std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
 std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
 {
     std::vector<PlaceID> places;
-    for (auto& it : id_) {
+    for (auto& it : placeMap) {
         if (it.second.type == type) {
             places.push_back(it.first);
         }
@@ -162,9 +181,9 @@ std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
 bool Datastructures::change_place_name(PlaceID id, const Name& newname)
 {
 
-    auto search = id_.find(id);
-    if (search != id_.end()) {
-        id_.at(id).name = newname;
+    auto search = placeMap.find(id);
+    if (search != placeMap.end()) {
+        placeMap.at(id).name = newname;
         return true;
     } else {
         return false;
@@ -173,9 +192,9 @@ bool Datastructures::change_place_name(PlaceID id, const Name& newname)
 
 bool Datastructures::change_place_coord(PlaceID id, Coord newcoord)
 {
-    auto search = id_.find(id);
-    if (search != id_.end()) {
-        id_.at(id).coord = newcoord;
+    auto search = placeMap.find(id);
+    if (search != placeMap.end()) {
+        placeMap.at(id).coord = newcoord;
         return true;
     } else {
         return false;
@@ -185,7 +204,7 @@ bool Datastructures::change_place_coord(PlaceID id, Coord newcoord)
 std::vector<AreaID> Datastructures::all_areas()
 {
     // Replace this comment with your implementation
-    return {};
+    return areaids;
 }
 
 bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
@@ -227,10 +246,10 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 bool Datastructures::coordCompare(PlaceID a, PlaceID b)
 {
     bool comp;
-    if (sqrt(pow(id_.at(a).coord.x, 2) + pow(id_.at(a).coord.y, 2)) == sqrt(pow(id_.at(b).coord.x, 2) + pow(id_.at(b).coord.y, 2))) {
-        comp = id_.at(a).coord.y > id_.at(b).coord.y;
+    if (sqrt(pow(placeMap.at(a).coord.x, 2) + pow(placeMap.at(a).coord.y, 2)) == sqrt(pow(placeMap.at(b).coord.x, 2) + pow(placeMap.at(b).coord.y, 2))) {
+        comp = placeMap.at(a).coord.y > placeMap.at(b).coord.y;
         return comp;
     }
-    comp = sqrt(pow(id_.at(a).coord.x, 2) + pow(id_.at(a).coord.y, 2)) < sqrt(pow(id_.at(b).coord.x, 2) + pow(id_.at(b).coord.y, 2));
+    comp = sqrt(pow(placeMap.at(a).coord.x, 2) + pow(placeMap.at(a).coord.y, 2)) < sqrt(pow(placeMap.at(b).coord.x, 2) + pow(placeMap.at(b).coord.y, 2));
     return comp;
 }

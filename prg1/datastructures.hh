@@ -51,6 +51,12 @@ struct Place {
     Coord coord;
 };
 
+struct Area {
+    Name name;
+    Coord coord;
+    std::vector<Coord> coords;
+};
+
 // Example: Defining == and hash function for Coord so that it can be used
 // as key for std::unordered_map/set, if needed
 inline bool operator==(Coord c1, Coord c2) { return c1.x == c2.x && c1.y == c2.y; }
@@ -198,12 +204,15 @@ public:
 
 private:
     // Add stuff needed for your class implementation here
-    std::unordered_map<PlaceID, Place> id_;
+    std::unordered_map<PlaceID, Place> placeMap;
     std::vector<PlaceID> placeidsName_;
     std::vector<PlaceID> placeidsCoord_;
 
     bool sortedCoord_ = false;
     bool sortedAlpha_ = false;
+
+    std::unordered_map<AreaID, Area> areaMap;
+    std::vector<AreaID> areaids;
 };
 
 #endif // DATASTRUCTURES_HH
