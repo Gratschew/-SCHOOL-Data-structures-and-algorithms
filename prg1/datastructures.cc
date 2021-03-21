@@ -152,6 +152,7 @@ std::vector<PlaceID> Datastructures::places_coord_order()
         sort(placeidsCoord_.begin(), placeidsCoord_.end(), [=](PlaceID a, PlaceID b) {
             return coordCompare(a, b);
         });
+        sortedCoord_ = true;
     }
     return placeidsCoord_;
 }
@@ -209,13 +210,38 @@ std::vector<AreaID> Datastructures::all_areas()
 
 bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
 {
-    // Replace this comment with your implementation
+    auto searchid = areaMap.find(id);
+    auto searchParentid = areaMap.find(parentid);
+    if (searchid != areaMap.end()) {
+        if (searchParentid != areaMap.end()) {
+            if (areaMap.at(id).isASubArea == false) {
+                areaMap.at(parentid).subAreas.push_back(id);
+                areaMap.at(id).parent = parentid;
+                areaMap.at(id).isASubArea = true;
+                //areaMap.at(id).hasParent = true;
+                return true;
+            }
+        }
+    }
     return false;
 }
 
 std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 {
-    // Replace this comment with your implementation
+    AreaID currentid = id;
+    std::vector<AreaID> parentMap;
+    auto searchid = areaMap.find(id);
+    if (searchid != areaMap.end()) {
+        while (true) {
+            if (areaMap.at(currentid).parent != NO_PARENT) {
+                currentid = areaMap.at(currentid).parent;
+                parentMap.push_back(currentid);
+            } else {
+                break;
+            }
+        }
+        return parentMap;
+    }
     return { NO_AREA };
 }
 
@@ -253,3 +279,14 @@ bool Datastructures::coordCompare(PlaceID a, PlaceID b)
     comp = sqrt(pow(placeMap.at(a).coord.x, 2) + pow(placeMap.at(a).coord.y, 2)) < sqrt(pow(placeMap.at(b).coord.x, 2) + pow(placeMap.at(b).coord.y, 2));
     return comp;
 }
+
+/*std::vector<AreaID> Datastructures::recSubAreas(AreaID id)
+{
+    std::vector<AreaID> v;
+    if (areaMap.at(id).hasParent) {
+        v = recSubAreas(areaMap.at(id).parent);
+    }
+
+    v.push_back(id);
+    return v;
+}*/

@@ -20,6 +20,7 @@ using WayID = std::string;
 PlaceID const NO_PLACE = -1;
 AreaID const NO_AREA = -1;
 WayID const NO_WAY = "!!No way!!";
+AreaID const NO_PARENT = -1;
 
 // Return value for cases where integer values were not found
 int const NO_VALUE = std::numeric_limits<int>::min();
@@ -55,6 +56,9 @@ struct Area {
     Name name;
     Coord coord;
     std::vector<Coord> coords;
+    std::vector<AreaID> subAreas;
+    bool isASubArea = false;
+    AreaID parent = NO_PARENT;
 };
 
 // Example: Defining == and hash function for Coord so that it can be used
@@ -201,6 +205,8 @@ public:
     AreaID common_area_of_subareas(AreaID id1, AreaID id2);
 
     bool coordCompare(PlaceID a, PlaceID b);
+
+    std::vector<AreaID> recSubAreas(AreaID id);
 
 private:
     // Add stuff needed for your class implementation here
