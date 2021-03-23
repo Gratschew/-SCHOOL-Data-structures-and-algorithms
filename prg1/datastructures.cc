@@ -45,7 +45,12 @@ int Datastructures::place_count()
 
 void Datastructures::clear_all()
 {
-    // Replace this comment with your implementation
+    placeMap.clear();
+    placeidsName_.clear();
+    placeidsCoord_.clear();
+
+    areaMap.clear();
+    areaids.clear();
 }
 
 std::vector<PlaceID> Datastructures::all_places()
@@ -149,9 +154,7 @@ std::vector<PlaceID> Datastructures::places_alphabetically()
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
     if (!sortedCoord_) {
-        sort(placeidsCoord_.begin(), placeidsCoord_.end(), [=](PlaceID a, PlaceID b) {
-            return coordCompare(a, b);
-        });
+        sort(placeidsCoord_.begin(), placeidsCoord_.end(), [=](PlaceID a, PlaceID b) { return coordCompare(a, b); });
         sortedCoord_ = true;
     }
     return placeidsCoord_;
@@ -185,6 +188,7 @@ bool Datastructures::change_place_name(PlaceID id, const Name& newname)
     auto search = placeMap.find(id);
     if (search != placeMap.end()) {
         placeMap.at(id).name = newname;
+        sortedAlpha_ = false;
         return true;
     } else {
         return false;
@@ -196,6 +200,7 @@ bool Datastructures::change_place_coord(PlaceID id, Coord newcoord)
     auto search = placeMap.find(id);
     if (search != placeMap.end()) {
         placeMap.at(id).coord = newcoord;
+        sortedCoord_ = false;
         return true;
     } else {
         return false;
@@ -253,7 +258,22 @@ std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 
 bool Datastructures::remove_place(PlaceID id)
 {
-    // Replace this comment with your implementation
+    auto search = placeMap.find(id);
+    if (search != placeMap.end()) {
+        placeMap.erase(id);
+        placeidsCoord_.clear();
+        placeidsName_.clear();
+        for (auto& it : placeMap) {
+
+            placeidsCoord_.push_back(it.first);
+            placeidsName_.push_back(it.first);
+            //sortedCoord_ = false;
+            //sortedAlpha_ = false;
+        }
+
+        return true;
+    }
+
     return false;
 }
 
