@@ -209,6 +209,8 @@ public:
 
     void recSubAreas(AreaID id, std::vector<AreaID>& vec);
 
+    bool euclideanDistance(PlaceID id1, PlaceID id2, Coord compared);
+
 private:
     // Add stuff needed for your class implementation here
     std::unordered_map<PlaceID, Place> placeMap;

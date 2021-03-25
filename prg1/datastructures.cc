@@ -252,8 +252,22 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 
 std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 {
-    // Replace this comment with your implementation
-    return {};
+    std::vector<PlaceID> places;
+    if (type != PlaceType::NO_TYPE) {
+        for (auto place : placeidsCoord_) {
+            if (placeMap.at(place).type == type) {
+                places.push_back(place);
+            }
+        }
+    } else {
+        places = placeidsCoord_;
+    }
+    sort(places.begin(), places.end(), [=](PlaceID a, PlaceID b) { return euclideanDistance(a, b, xy); });
+    if (places.size() > 3) {
+        places.resize(3);
+    }
+
+    return places;
 }
 
 bool Datastructures::remove_place(PlaceID id)
@@ -291,7 +305,10 @@ std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
-    // Replace this comment with your implementation
+    auto search = areaMap.find(id1);
+    auto search2 = areaMap.find(id2);
+    if (search != areaMap.end() || search2 != areaMap.end()) {
+    }
     return NO_AREA;
 }
 
@@ -312,4 +329,20 @@ void Datastructures::recSubAreas(AreaID id, std::vector<AreaID>& subAreaVec)
         subAreaVec.push_back(area);
         recSubAreas(area, subAreaVec);
     }
+}
+
+bool Datastructures::euclideanDistance(PlaceID id1, PlaceID id2, Coord compared)
+{
+    if (sqrt(pow(compared.x - placeMap.at(id1).coord.x, 2) + pow(compared.y - placeMap.at(id1).coord.y, 2))
+        == sqrt(pow(compared.x - placeMap.at(id2).coord.x, 2) + pow(compared.y - placeMap.at(id2).coord.y, 2))) {
+        if (placeMap.at(id1).coord.y < placeMap.at(id2).coord.y) {
+            return true;
+        }
+    }
+    if (sqrt(pow(compared.x - placeMap.at(id1).coord.x, 2) + pow(compared.y - placeMap.at(id1).coord.y, 2))
+        < sqrt(pow(compared.x - placeMap.at(id2).coord.x, 2) + pow(compared.y - placeMap.at(id2).coord.y, 2))) {
+        return true;
+    }
+
+    return false;
 }
