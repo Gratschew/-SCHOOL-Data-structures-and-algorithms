@@ -107,6 +107,7 @@ bool Datastructures::add_area(AreaID id, const Name& name, std::vector<Coord> co
         Area area;
         area.name = name;
         area.coords = coords;
+        area.ownID = id;
         areaMap.insert(std::make_pair(id, area));
         areaids.push_back(id);
 
@@ -209,7 +210,6 @@ bool Datastructures::change_place_coord(PlaceID id, Coord newcoord)
 
 std::vector<AreaID> Datastructures::all_areas()
 {
-    // Replace this comment with your implementation
     return areaids;
 }
 
@@ -267,8 +267,8 @@ bool Datastructures::remove_place(PlaceID id)
 
             placeidsCoord_.push_back(it.first);
             placeidsName_.push_back(it.first);
-            //sortedCoord_ = false;
-            //sortedAlpha_ = false;
+            sortedCoord_ = false;
+            sortedAlpha_ = false;
         }
 
         return true;
@@ -279,7 +279,13 @@ bool Datastructures::remove_place(PlaceID id)
 
 std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 {
-    // Replace this comment with your implementation
+    std::vector<AreaID> subAreaVec;
+    auto search = areaMap.find(id);
+    if (search != areaMap.end()) {
+        recSubAreas(id, subAreaVec);
+        return subAreaVec;
+    }
+
     return { NO_AREA };
 }
 
@@ -300,13 +306,10 @@ bool Datastructures::coordCompare(PlaceID a, PlaceID b)
     return comp;
 }
 
-/*std::vector<AreaID> Datastructures::recSubAreas(AreaID id)
+void Datastructures::recSubAreas(AreaID id, std::vector<AreaID>& subAreaVec)
 {
-    std::vector<AreaID> v;
-    if (areaMap.at(id).hasParent) {
-        v = recSubAreas(areaMap.at(id).parent);
+    for (auto area : areaMap.at(id).subAreas) {
+        subAreaVec.push_back(area);
+        recSubAreas(area, subAreaVec);
     }
-
-    v.push_back(id);
-    return v;
-}*/
+}
