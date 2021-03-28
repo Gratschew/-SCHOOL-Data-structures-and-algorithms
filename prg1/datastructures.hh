@@ -59,7 +59,6 @@ struct Area {
     std::vector<AreaID> subAreas;
     bool isASubArea = false;
     AreaID parent = NO_PARENT;
-    AreaID ownID = NO_AREA;
 };
 
 // Example: Defining == and hash function for Coord so that it can be used

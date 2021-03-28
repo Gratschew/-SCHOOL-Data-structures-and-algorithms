@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include <QDebug>
 #include <algorithm>
 #include <iostream>
 
@@ -107,7 +108,6 @@ bool Datastructures::add_area(AreaID id, const Name& name, std::vector<Coord> co
         Area area;
         area.name = name;
         area.coords = coords;
-        area.ownID = id;
         areaMap.insert(std::make_pair(id, area));
         areaids.push_back(id);
 
@@ -308,6 +308,22 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
     auto search = areaMap.find(id1);
     auto search2 = areaMap.find(id2);
     if (search != areaMap.end() || search2 != areaMap.end()) {
+        auto parents1 = subarea_in_areas(id1);
+        if (parents1.size() > 0) {
+            auto parents2 = subarea_in_areas(id2);
+            if (parents2.size() > 0) {
+                std::unordered_map<AreaID, int> parents1Map;
+                for (auto x : parents1) {
+                    parents1Map[x];
+                }
+                for (auto x : parents2) {
+                    auto search = parents1Map.find(x);
+                    if (search != parents1Map.end()) {
+                        return x;
+                    }
+                }
+            }
+        }
     }
     return NO_AREA;
 }
