@@ -140,9 +140,6 @@ std::vector<Coord> Datastructures::get_area_coords(AreaID id)
 
 void Datastructures::creation_finished()
 {
-    // Replace this comment with your implementation
-    // NOTE!! It's quite ok to leave this empty, if you don't need operations
-    // that are performed after all additions have been done.
 }
 
 std::vector<PlaceID> Datastructures::places_alphabetically()
