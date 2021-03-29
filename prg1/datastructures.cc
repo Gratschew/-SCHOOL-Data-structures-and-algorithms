@@ -30,50 +30,54 @@ Type random_in_range(Type start, Type end)
 
 Datastructures::Datastructures()
 {
-    // Replace this comment with your implementation
 }
 
 Datastructures::~Datastructures()
 {
-    // Replace this comment with your implementation
 }
 
 int Datastructures::place_count()
 {
-    // Replace this comment with your implementation
     return placeMap.size();
 }
 
 void Datastructures::clear_all()
 {
+    // clear unordered_map of places and both vectors
     placeMap.clear();
     placeidsName_.clear();
     placeidsCoord_.clear();
 
+    // clear unordered_map of areas and a vector
     areaMap.clear();
     areaids.clear();
 }
 
 std::vector<PlaceID> Datastructures::all_places()
 {
-    // Replace this comment with your implementation
-    return { placeidsName_ };
+    // return vector with all place ids, order of id's doesn't matter
+    return placeidsName_;
 }
 
 bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coord xy)
 {
-    auto search = placeMap.find(id);
-    if (search != placeMap.end()) {
+    if (placeMap.find(id) != placeMap.end()) {
         return false;
     } else {
+
+        // create place
         Place place;
         place.name = name;
         place.type = type;
         place.coord = xy;
 
+        // insert created place to placeMap with id as key and place as value
+        // also push the id to two different vectors
         placeMap.insert(std::make_pair(id, place));
         placeidsName_.push_back(id);
         placeidsCoord_.push_back(id);
+
+        // both vectors placeidsName_ and placeidsCoord_ are now not sorted
         sortedCoord_ = false;
         sortedAlpha_ = false;
         return true;
@@ -82,8 +86,7 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
 
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
 {
-    auto search = placeMap.find(id);
-    if (search != placeMap.end()) {
+    if (placeMap.find(id) != placeMap.end()) {
         return { placeMap.at(id).name, placeMap.at(id).type };
     }
     return { NO_NAME, PlaceType::NO_TYPE };
@@ -91,8 +94,7 @@ std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
 
 Coord Datastructures::get_place_coord(PlaceID id)
 {
-    auto search = placeMap.find(id);
-    if (search != placeMap.end()) {
+    if (placeMap.find(id) != placeMap.end()) {
         return placeMap.at(id).coord;
     } else {
         return NO_COORD;
@@ -101,16 +103,18 @@ Coord Datastructures::get_place_coord(PlaceID id)
 
 bool Datastructures::add_area(AreaID id, const Name& name, std::vector<Coord> coords)
 {
-    auto search = areaMap.find(id);
-    if (search != areaMap.end()) {
+    if (areaMap.find(id) != areaMap.end()) {
         return false;
     } else {
+        // create area
         Area area;
         area.name = name;
         area.coords = coords;
+
+        // insert area to areaMap with id as key and area as value
+        // push id in to a vector
         areaMap.insert(std::make_pair(id, area));
         areaids.push_back(id);
-
         return true;
     }
     return false;
@@ -118,8 +122,7 @@ bool Datastructures::add_area(AreaID id, const Name& name, std::vector<Coord> co
 
 Name Datastructures::get_area_name(AreaID id)
 {
-    auto search = areaMap.find(id);
-    if (search != areaMap.end()) {
+    if (areaMap.find(id) != areaMap.end()) {
         return areaMap.at(id).name;
     } else {
         return NO_NAME;
@@ -128,8 +131,7 @@ Name Datastructures::get_area_name(AreaID id)
 
 std::vector<Coord> Datastructures::get_area_coords(AreaID id)
 {
-    auto search = areaMap.find(id);
-    if (search != areaMap.end()) {
+    if (areaMap.find(id) != areaMap.end()) {
         return areaMap.at(id).coords;
     } else {
         return { NO_COORD };
@@ -146,6 +148,7 @@ void Datastructures::creation_finished()
 std::vector<PlaceID> Datastructures::places_alphabetically()
 {
     if (!sortedAlpha_) {
+
         sort(placeidsName_.begin(), placeidsName_.end(), [=](PlaceID a, PlaceID b) { return placeMap.at(a).name < placeMap.at(b).name; });
         sortedAlpha_ = true;
     }
@@ -154,7 +157,10 @@ std::vector<PlaceID> Datastructures::places_alphabetically()
 
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
+
     if (!sortedCoord_) {
+
+        // sort using implemented coordCompare function
         sort(placeidsCoord_.begin(), placeidsCoord_.end(), [=](PlaceID a, PlaceID b) { return coordCompare(a, b); });
         sortedCoord_ = true;
     }
@@ -164,9 +170,9 @@ std::vector<PlaceID> Datastructures::places_coord_order()
 std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
 {
     std::vector<PlaceID> places;
-    for (auto& it : placeMap) {
-        if (it.second.name == name) {
-            places.push_back(it.first);
+    for (auto& place : placeMap) {
+        if (place.second.name == name) {
+            places.push_back(place.first);
         }
     }
     return places;
@@ -175,9 +181,9 @@ std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
 std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
 {
     std::vector<PlaceID> places;
-    for (auto& it : placeMap) {
-        if (it.second.type == type) {
-            places.push_back(it.first);
+    for (auto& place : placeMap) {
+        if (place.second.type == type) {
+            places.push_back(place.first);
         }
     }
     return places;
@@ -186,9 +192,10 @@ std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
 bool Datastructures::change_place_name(PlaceID id, const Name& newname)
 {
 
-    auto search = placeMap.find(id);
-    if (search != placeMap.end()) {
+    if (placeMap.find(id) != placeMap.end()) {
         placeMap.at(id).name = newname;
+
+        // vector no more sorted by alphabetically
         sortedAlpha_ = false;
         return true;
     } else {
@@ -198,9 +205,10 @@ bool Datastructures::change_place_name(PlaceID id, const Name& newname)
 
 bool Datastructures::change_place_coord(PlaceID id, Coord newcoord)
 {
-    auto search = placeMap.find(id);
-    if (search != placeMap.end()) {
+    if (placeMap.find(id) != placeMap.end()) {
         placeMap.at(id).coord = newcoord;
+
+        // vector sorted by coord not is sorted anymore
         sortedCoord_ = false;
         return true;
     } else {
@@ -215,17 +223,17 @@ std::vector<AreaID> Datastructures::all_areas()
 
 bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
 {
-    auto searchid = areaMap.find(id);
-    auto searchParentid = areaMap.find(parentid);
-    if (searchid != areaMap.end()) {
-        if (searchParentid != areaMap.end()) {
-            if (areaMap.at(id).isASubArea == false) {
-                areaMap.at(parentid).subAreas.push_back(id);
-                areaMap.at(id).parent = parentid;
-                areaMap.at(id).isASubArea = true;
-                //areaMap.at(id).hasParent = true;
-                return true;
-            }
+
+    if (areaMap.find(id) != areaMap.end() && areaMap.find(parentid) != areaMap.end()) {
+        if (areaMap.at(id).isASubArea == false) {
+
+            // add area as parents subarea
+            areaMap.at(parentid).subAreas.push_back(id);
+
+            // add parent as subareas parent
+            areaMap.at(id).parent = parentid;
+            areaMap.at(id).isASubArea = true;
+            return true;
         }
     }
     return false;
@@ -234,18 +242,19 @@ bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
 std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 {
     AreaID currentid = id;
-    std::vector<AreaID> parentMap;
-    auto searchid = areaMap.find(id);
-    if (searchid != areaMap.end()) {
-        while (true) {
-            if (areaMap.at(currentid).parent != NO_PARENT) {
-                currentid = areaMap.at(currentid).parent;
-                parentMap.push_back(currentid);
-            } else {
-                break;
-            }
+    std::vector<AreaID> parentAreas;
+
+    if (areaMap.find(id) != areaMap.end()) {
+
+        // while currentid has a parent
+        while (areaMap.at(currentid).parent != NO_PARENT) {
+
+            // set area's parent as currentid
+            currentid = areaMap.at(currentid).parent;
+            parentAreas.push_back(currentid);
         }
-        return parentMap;
+
+        return parentAreas;
     }
     return { NO_AREA };
 }
@@ -253,16 +262,23 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 {
     std::vector<PlaceID> places;
+
+    //if PlaceType has a special type, only those of that type is taken into consideration
     if (type != PlaceType::NO_TYPE) {
         for (auto place : placeidsCoord_) {
             if (placeMap.at(place).type == type) {
                 places.push_back(place);
             }
         }
+        // if PlaceType::NO_TYPE, all types are taken into consideration
     } else {
         places = placeidsCoord_;
     }
-    sort(places.begin(), places.end(), [=](PlaceID a, PlaceID b) { return euclideanDistance(a, b, xy); });
+
+    // sort using implemented function euclideanDistance
+    sort(places.begin(), places.end(), [=](PlaceID a, PlaceID b) { return twoPointDistance(a, b, xy); });
+
+    // only maximum of three closest places must be returned
     if (places.size() > 3) {
         places.resize(3);
     }
@@ -272,19 +288,23 @@ std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 
 bool Datastructures::remove_place(PlaceID id)
 {
-    auto search = placeMap.find(id);
-    if (search != placeMap.end()) {
+    if (placeMap.find(id) != placeMap.end()) {
+
+        // remove place from placeMap and empty two vectors containing placeids
         placeMap.erase(id);
         placeidsCoord_.clear();
         placeidsName_.clear();
-        for (auto& it : placeMap) {
 
-            placeidsCoord_.push_back(it.first);
-            placeidsName_.push_back(it.first);
+        // refill vectors with placeids from placeMap
+        for (auto& place : placeMap) {
+
+            placeidsCoord_.push_back(place.first);
+            placeidsName_.push_back(place.first);
+
+            // vectors no more sorted
             sortedCoord_ = false;
             sortedAlpha_ = false;
         }
-
         return true;
     }
 
@@ -294,9 +314,12 @@ bool Datastructures::remove_place(PlaceID id)
 std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 {
     std::vector<AreaID> subAreaVec;
-    auto search = areaMap.find(id);
-    if (search != areaMap.end()) {
+
+    if (areaMap.find(id) != areaMap.end()) {
+
+        // recursive function to fill subAreaVec with all subareas
         recSubAreas(id, subAreaVec);
+
         return subAreaVec;
     }
 
@@ -305,21 +328,26 @@ std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
-    auto search = areaMap.find(id1);
-    auto search2 = areaMap.find(id2);
-    if (search != areaMap.end() || search2 != areaMap.end()) {
-        auto parents1 = subarea_in_areas(id1);
-        if (parents1.size() > 0) {
-            auto parents2 = subarea_in_areas(id2);
-            if (parents2.size() > 0) {
-                std::unordered_map<AreaID, int> parents1Map;
-                for (auto x : parents1) {
-                    parents1Map[x];
+
+    if (areaMap.find(id1) != areaMap.end() && areaMap.find(id2) != areaMap.end()) {
+
+        // get all parents for id1 and id2
+        auto parentsID1 = subarea_in_areas(id1);
+        if (parentsID1.size() > 0) {
+            auto parentsID2 = subarea_in_areas(id2);
+            if (parentsID2.size() > 0) {
+
+                // put parent's areaID's from parentsID1 to unordered_map parentsID1Map as keys
+                std::unordered_map<AreaID, int> parentsID1Map;
+                for (auto parent : parentsID1) {
+                    parentsID1Map[parent];
                 }
-                for (auto x : parents2) {
-                    auto search = parents1Map.find(x);
-                    if (search != parents1Map.end()) {
-                        return x;
+
+                // loop through vector of id2's parents, try to find each parent from parentsID1Map
+                // when possibly first one found, return it
+                for (auto parent : parentsID2) {
+                    if (parentsID1Map.find(parent) != parentsID1Map.end()) {
+                        return parent;
                     }
                 }
             }
@@ -331,30 +359,39 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 bool Datastructures::coordCompare(PlaceID a, PlaceID b)
 {
     bool comp;
+    // if place's have equal distance from the origin
     if (sqrt(pow(placeMap.at(a).coord.x, 2) + pow(placeMap.at(a).coord.y, 2)) == sqrt(pow(placeMap.at(b).coord.x, 2) + pow(placeMap.at(b).coord.y, 2))) {
+
+        // the one with smaller y coordinate comes first.
         comp = placeMap.at(a).coord.y > placeMap.at(b).coord.y;
         return comp;
     }
+    // the closer one from origin comes first
     comp = sqrt(pow(placeMap.at(a).coord.x, 2) + pow(placeMap.at(a).coord.y, 2)) < sqrt(pow(placeMap.at(b).coord.x, 2) + pow(placeMap.at(b).coord.y, 2));
     return comp;
 }
 
 void Datastructures::recSubAreas(AreaID id, std::vector<AreaID>& subAreaVec)
 {
+    // pushes all sub areas to vector recursively
     for (auto area : areaMap.at(id).subAreas) {
         subAreaVec.push_back(area);
         recSubAreas(area, subAreaVec);
     }
 }
 
-bool Datastructures::euclideanDistance(PlaceID id1, PlaceID id2, Coord compared)
+bool Datastructures::twoPointDistance(PlaceID id1, PlaceID id2, Coord compared)
 {
+    // if id1 and id2 are from equal distance of compared, the one with smaller y-coordinate comes first
     if (sqrt(pow(compared.x - placeMap.at(id1).coord.x, 2) + pow(compared.y - placeMap.at(id1).coord.y, 2))
         == sqrt(pow(compared.x - placeMap.at(id2).coord.x, 2) + pow(compared.y - placeMap.at(id2).coord.y, 2))) {
+
         if (placeMap.at(id1).coord.y < placeMap.at(id2).coord.y) {
             return true;
         }
     }
+
+    // the closer one comes first
     if (sqrt(pow(compared.x - placeMap.at(id1).coord.x, 2) + pow(compared.y - placeMap.at(id1).coord.y, 2))
         < sqrt(pow(compared.x - placeMap.at(id2).coord.x, 2) + pow(compared.y - placeMap.at(id2).coord.y, 2))) {
         return true;

@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 // Types for IDs
-using PlaceID = long int;
-using AreaID = long int;
+using PlaceID = long long int;
+using AreaID = long long int;
 using Name = std::string;
 using WayID = std::string;
 
@@ -208,7 +208,7 @@ public:
 
     void recSubAreas(AreaID id, std::vector<AreaID>& vec);
 
-    bool euclideanDistance(PlaceID id1, PlaceID id2, Coord compared);
+    bool twoPointDistance(PlaceID id1, PlaceID id2, Coord compared);
 
 private:
     // Add stuff needed for your class implementation here
