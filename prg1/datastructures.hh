@@ -219,14 +219,16 @@ public:
     bool twoPointDistance(PlaceID id1, PlaceID id2, Coord compared);
 
 private:
-    // Add stuff needed for your class implementation here
+    // Datastructure for the places
     std::unordered_map<PlaceID, Place> placeMap;
     std::vector<PlaceID> placeidsName_;
     std::vector<PlaceID> placeidsCoord_;
 
+    // Boolean values if the placeids vectors are sorted or not
     bool sortedCoord_ = false;
     bool sortedAlpha_ = false;
 
+    // Datastructure for the areas
     std::unordered_map<AreaID, Area> areaMap;
     std::vector<AreaID> areaids;
 };
