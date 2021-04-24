@@ -3,12 +3,13 @@
 #ifndef DATASTRUCTURES_HH
 #define DATASTRUCTURES_HH
 
+#include <functional>
+#include <limits>
+#include <memory>
 #include <string>
-#include <vector>
 #include <tuple>
 #include <utility>
-#include <limits>
-#include <functional>
+#include <vector>
 
 // Types for IDs
 using PlaceID = long long int;
@@ -30,22 +31,34 @@ Name const NO_NAME = "!!NO_NAME!!";
 // Enumeration for different place types
 // !!Note since this is a C++11 "scoped enumeration", you'll have to refer to
 // individual values as PlaceType::SHELTER etc.
-enum class PlaceType { OTHER=0, FIREPIT, SHELTER, PARKING, PEAK, BAY, AREA, NO_TYPE };
+enum class PlaceType { OTHER = 0,
+    FIREPIT,
+    SHELTER,
+    PARKING,
+    PEAK,
+    BAY,
+    AREA,
+    NO_TYPE };
 
 // Type for a coordinate (x, y)
-struct Coord
-{
+struct Coord {
     int x = NO_VALUE;
     int y = NO_VALUE;
+};
+
+struct Way {
+    std::shared_ptr<Way> prevNode;
+    std::shared_ptr<Way> nextNode;
+    std::shared_ptr<Way> leafNode;
+    Coord coord;
 };
 
 // Example: Defining == and hash function for Coord so that it can be used
 // as key for std::unordered_map/set, if needed
 inline bool operator==(Coord c1, Coord c2) { return c1.x == c2.x && c1.y == c2.y; }
-inline bool operator!=(Coord c1, Coord c2) { return !(c1==c2); } // Not strictly necessary
+inline bool operator!=(Coord c1, Coord c2) { return !(c1 == c2); } // Not strictly necessary
 
-struct CoordHash
-{
+struct CoordHash {
     std::size_t operator()(Coord xy) const
     {
         auto hasher = std::hash<int>();
@@ -60,13 +73,17 @@ struct CoordHash
 // as key for std::map/set
 inline bool operator<(Coord c1, Coord c2)
 {
-    if (c1.y < c2.y) { return true; }
-    else if (c2.y < c1.y) { return false; }
-    else { return c1.x < c2.x; }
+    if (c1.y < c2.y) {
+        return true;
+    } else if (c2.y < c1.y) {
+        return false;
+    } else {
+        return c1.x < c2.x;
+    }
 }
 
 // Return value for cases where coordinates were not found
-Coord const NO_COORD = {NO_VALUE, NO_VALUE};
+Coord const NO_COORD = { NO_VALUE, NO_VALUE };
 
 // Type for a distance (in metres)
 using Distance = int;
@@ -74,12 +91,9 @@ using Distance = int;
 // Return value for cases where Duration is unknown
 Distance const NO_DISTANCE = NO_VALUE;
 
-
-
 // This is the class you are supposed to implement
 
-class Datastructures
-{
+class Datastructures {
 public:
     Datastructures();
     ~Datastructures();
@@ -231,8 +245,8 @@ public:
     Distance trim_ways();
 
 private:
-    // Add stuff needed for your class implementation here
-
+    std::vector<WayID> wayVector;
+    std::unordered_map<WayID, std::pair<std::shared_ptr<Way>, std::vector<Coord>>> wayMap;
 };
 
 #endif // DATASTRUCTURES_HH

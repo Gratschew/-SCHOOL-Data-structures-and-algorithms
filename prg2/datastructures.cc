@@ -4,6 +4,7 @@
 
 #include <random>
 
+#include "iostream"
 #include <cmath>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
@@ -11,12 +12,12 @@ std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 template <typename Type>
 Type random_in_range(Type start, Type end)
 {
-    auto range = end-start;
+    auto range = end - start;
     ++range;
 
-    auto num = std::uniform_int_distribution<unsigned long int>(0, range-1)(rand_engine);
+    auto num = std::uniform_int_distribution<unsigned long int>(0, range - 1)(rand_engine);
 
-    return static_cast<Type>(start+num);
+    return static_cast<Type>(start + num);
 }
 
 // Modify the code below to implement the functionality of the class.
@@ -60,7 +61,7 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
 {
     // Replace this comment with your implementation
-    return {NO_NAME, PlaceType::NO_TYPE};
+    return { NO_NAME, PlaceType::NO_TYPE };
 }
 
 Coord Datastructures::get_place_coord(PlaceID id)
@@ -69,7 +70,7 @@ Coord Datastructures::get_place_coord(PlaceID id)
     return NO_COORD;
 }
 
-bool Datastructures::add_area(AreaID id, const Name &name, std::vector<Coord> coords)
+bool Datastructures::add_area(AreaID id, const Name& name, std::vector<Coord> coords)
 {
     // Replace this comment with your implementation
     return false;
@@ -84,7 +85,7 @@ Name Datastructures::get_area_name(AreaID id)
 std::vector<Coord> Datastructures::get_area_coords(AreaID id)
 {
     // Replace this comment with your implementation
-    return {NO_COORD};
+    return { NO_COORD };
 }
 
 void Datastructures::creation_finished()
@@ -93,7 +94,6 @@ void Datastructures::creation_finished()
     // NOTE!! It's quite ok to leave this empty, if you don't need operations
     // that are performed after all additions have been done.
 }
-
 
 std::vector<PlaceID> Datastructures::places_alphabetically()
 {
@@ -146,7 +146,7 @@ bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
 std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 {
     // Replace this comment with your implementation
-    return {NO_AREA};
+    return { NO_AREA };
 }
 
 std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
@@ -164,7 +164,7 @@ bool Datastructures::remove_place(PlaceID id)
 std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 {
     // Replace this comment with your implementation
-    return {NO_AREA};
+    return { NO_AREA };
 }
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
@@ -176,36 +176,76 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 std::vector<WayID> Datastructures::all_ways()
 {
     // Replace this comment with your implementation
-    return {};
+    return wayVector;
 }
 
 bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
-{   
-    // Replace this comment with your implementation
-    return false;
+{
+    if (wayMap.find(id) != wayMap.end()) {
+        return false;
+    } else {
+
+        auto WAY = std::make_shared<Way>();
+
+        WAY->coord = coords.at(0);
+        std::shared_ptr<Way> y { WAY };
+
+        for (auto coor : coords) {
+
+            std::shared_ptr<Way> WAY2 { new Way };
+            WAY2->coord = coor;
+            WAY2->prevNode = y;
+            y->nextNode = WAY2;
+            y = WAY2;
+            WAY->leafNode = y;
+        }
+        auto x = std::make_pair(WAY, coords);
+        wayMap.insert(std::make_pair(id, x));
+        wayVector.push_back(id);
+
+        return true;
+    }
 }
 
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 {
-    // Replace this comment with your implementation
-    return {{NO_WAY, NO_COORD}};
+    std::vector<std::pair<WayID, Coord>> waysFromCoord;
+
+    for (auto x : wayMap) {
+        if (x.second.first->coord == xy) {
+            auto pair = std::make_pair(x.first, x.second.first->leafNode->coord);
+            waysFromCoord.push_back(pair);
+        }
+        if (x.second.first->leafNode->coord == xy) {
+            auto pair = std::make_pair(x.first, x.second.first->coord);
+            waysFromCoord.push_back(pair);
+        }
+    }
+    if (waysFromCoord.size() > 0) {
+        return waysFromCoord;
+    }
+    return {};
 }
 
 std::vector<Coord> Datastructures::get_way_coords(WayID id)
 {
-    // Replace this comment with your implementation
-    return {NO_COORD};
+    if (wayMap.find(id) != wayMap.end()) {
+        return wayMap.at(id).second;
+    } else {
+        return { NO_COORD };
+    }
 }
 
 void Datastructures::clear_ways()
 {
-    // Replace this comment with your implementation
+    wayMap.clear();
+    wayVector.clear();
 }
 
-std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord fromxy, Coord toxy)
+std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_any(Coord fromxy, Coord toxy)
 {
     // Replace this comment with your implementation
-    return {{NO_COORD, NO_WAY, NO_DISTANCE}};
+    return { { NO_COORD, NO_WAY, NO_DISTANCE } };
 }
 
 bool Datastructures::remove_way(WayID id)
@@ -214,22 +254,22 @@ bool Datastructures::remove_way(WayID id)
     return false;
 }
 
-std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_least_crossroads(Coord fromxy, Coord toxy)
+std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_least_crossroads(Coord fromxy, Coord toxy)
 {
     // Replace this comment with your implementation
-    return {{NO_COORD, NO_WAY, NO_DISTANCE}};
+    return { { NO_COORD, NO_WAY, NO_DISTANCE } };
 }
 
-std::vector<std::tuple<Coord, WayID> > Datastructures::route_with_cycle(Coord fromxy)
+std::vector<std::tuple<Coord, WayID>> Datastructures::route_with_cycle(Coord fromxy)
 {
     // Replace this comment with your implementation
-    return {{NO_COORD, NO_WAY}};
+    return { { NO_COORD, NO_WAY } };
 }
 
-std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_shortest_distance(Coord fromxy, Coord toxy)
+std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_shortest_distance(Coord fromxy, Coord toxy)
 {
     // Replace this comment with your implementation
-    return {{NO_COORD, NO_WAY, NO_DISTANCE}};
+    return { { NO_COORD, NO_WAY, NO_DISTANCE } };
 }
 
 Distance Datastructures::trim_ways()
