@@ -267,7 +267,7 @@ private:
     //std::unordered_map<WayID, std::pair<std::shared_ptr<Way>, std::vector<Coord>>> wayMap;
 
     std::unordered_map<WayID, std::shared_ptr<Way2>> wayMap2;
-    std::map<Coord, std::shared_ptr<Crossroad>> crossroadMap;
+    std::unordered_map<Coord, std::shared_ptr<Crossroad>, CoordHash> crossroadMap;
 };
 
 #endif // DATASTRUCTURES_HH
