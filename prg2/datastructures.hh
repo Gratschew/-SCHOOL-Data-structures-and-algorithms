@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <limits>
+#include <map>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -46,11 +47,26 @@ struct Coord {
     int y = NO_VALUE;
 };
 
+struct Way2 {
+    WayID id;
+    std::vector<Coord> coords;
+};
+
 struct Way {
     std::shared_ptr<Way> prevNode;
     std::shared_ptr<Way> nextNode;
     std::shared_ptr<Way> leafNode;
     Coord coord;
+    std::vector<std::shared_ptr<Way>> waysStart; // ways that start from
+        // where this way ends
+
+    std::vector<std::shared_ptr<Way>> waysEnd; // ways that end from
+        // where this way ends
+};
+
+struct Crossroad {
+    Coord coord;
+    std::vector<std::shared_ptr<Way2>> ways;
 };
 
 // Example: Defining == and hash function for Coord so that it can be used
@@ -244,9 +260,14 @@ public:
     // Short rationale for estimate:
     Distance trim_ways();
 
+    bool isRoutePossible(Coord fromxy, Coord toxy);
+
 private:
     std::vector<WayID> wayVector;
-    std::unordered_map<WayID, std::pair<std::shared_ptr<Way>, std::vector<Coord>>> wayMap;
+    //std::unordered_map<WayID, std::pair<std::shared_ptr<Way>, std::vector<Coord>>> wayMap;
+
+    std::unordered_map<WayID, std::shared_ptr<Way2>> wayMap2;
+    std::map<Coord, std::shared_ptr<Crossroad>> crossroadMap;
 };
 
 #endif // DATASTRUCTURES_HH

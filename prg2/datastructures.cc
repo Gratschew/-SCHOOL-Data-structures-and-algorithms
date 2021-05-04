@@ -181,7 +181,7 @@ std::vector<WayID> Datastructures::all_ways()
 
 bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
 {
-    if (wayMap.find(id) != wayMap.end()) {
+    /*if (wayMap.find(id) != wayMap.end()) {
         return false;
     } else {
 
@@ -204,12 +204,43 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
         wayVector.push_back(id);
 
         return true;
+    }*/
+    if (wayMap2.find(id) != wayMap2.end()) {
+        return false;
+    } else {
+
+        auto WAY = std::make_shared<Way2>();
+        WAY->id = id;
+        WAY->coords = coords;
+        wayMap2.insert(std::make_pair(id, WAY));
+        wayVector.push_back(id);
+        auto CROSSROAD1 = std::make_shared<Crossroad>();
+        auto CROSSROAD2 = std::make_shared<Crossroad>();
+
+        // first crossroad
+        if (crossroadMap.find(coords.front()) == crossroadMap.end()) {
+            CROSSROAD1->coord = coords.front();
+            CROSSROAD1->ways.push_back(WAY);
+            crossroadMap.insert(std::make_pair(coords.front(), CROSSROAD1));
+        } else {
+            crossroadMap.at(coords.front())->ways.push_back(WAY);
+        }
+
+        // second crossroad
+        if (crossroadMap.find(coords.back()) == crossroadMap.end()) {
+            CROSSROAD2->coord = coords.back();
+            CROSSROAD2->ways.push_back(WAY);
+            crossroadMap.insert(std::make_pair(coords.back(), CROSSROAD2));
+        } else {
+            crossroadMap.at(coords.back())->ways.push_back(WAY);
+        }
+        return true;
     }
 }
 
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 {
-    std::vector<std::pair<WayID, Coord>> waysFromCoord;
+    /*std::vector<std::pair<WayID, Coord>> waysFromCoord;
 
     for (auto x : wayMap) {
         if (x.second.first->coord == xy) {
@@ -224,13 +255,35 @@ std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
     if (waysFromCoord.size() > 0) {
         return waysFromCoord;
     }
-    return {};
+    return {};*/
+    std::vector<std::pair<WayID, Coord>> waysFromCoord;
+    if (crossroadMap.find(xy) == crossroadMap.end()) {
+        return {};
+    } else {
+
+        for (auto way : crossroadMap.at(xy)->ways) {
+            if (way->coords.back() != xy) {
+                auto pair = std::make_pair(way->id, way->coords.back());
+                waysFromCoord.push_back(pair);
+            } else {
+                auto pair = std::make_pair(way->id, way->coords.front());
+                waysFromCoord.push_back(pair);
+            }
+        }
+
+        return waysFromCoord;
+    }
 }
 
 std::vector<Coord> Datastructures::get_way_coords(WayID id)
 {
-    if (wayMap.find(id) != wayMap.end()) {
+    /*if (wayMap.find(id) != wayMap.end()) {
         return wayMap.at(id).second;
+    } else {
+        return { NO_COORD };
+    }*/
+    if (wayMap2.find(id) != wayMap2.end()) {
+        return wayMap2.at(id)->coords;
     } else {
         return { NO_COORD };
     }
@@ -238,13 +291,16 @@ std::vector<Coord> Datastructures::get_way_coords(WayID id)
 
 void Datastructures::clear_ways()
 {
-    wayMap.clear();
+    wayMap2.clear();
     wayVector.clear();
+    crossroadMap.clear();
 }
 
 std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_any(Coord fromxy, Coord toxy)
 {
     // Replace this comment with your implementation
+    if (isRoutePossible(fromxy, toxy)) {
+    }
     return { { NO_COORD, NO_WAY, NO_DISTANCE } };
 }
 
@@ -276,4 +332,15 @@ Distance Datastructures::trim_ways()
 {
     // Replace this comment with your implementation
     return NO_DISTANCE;
+}
+
+bool Datastructures::isRoutePossible(Coord fromxy, Coord toxy)
+{
+    if (crossroadMap.find(fromxy) == crossroadMap.end()) {
+        return false;
+    }
+    if (crossroadMap.find(toxy) == crossroadMap.end()) {
+        return false;
+    }
+    return true;
 }
