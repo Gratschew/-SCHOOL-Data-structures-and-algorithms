@@ -6,6 +6,7 @@
 
 #include "iostream"
 #include <cmath>
+#include <stack>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 
@@ -181,30 +182,7 @@ std::vector<WayID> Datastructures::all_ways()
 
 bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
 {
-    /*if (wayMap.find(id) != wayMap.end()) {
-        return false;
-    } else {
 
-        auto WAY = std::make_shared<Way>();
-
-        WAY->coord = coords.at(0);
-        std::shared_ptr<Way> y { WAY };
-
-        for (auto coor : coords) {
-
-            std::shared_ptr<Way> WAY2 { new Way };
-            WAY2->coord = coor;
-            WAY2->prevNode = y;
-            y->nextNode = WAY2;
-            y = WAY2;
-            WAY->leafNode = y;
-        }
-        auto x = std::make_pair(WAY, coords);
-        wayMap.insert(std::make_pair(id, x));
-        wayVector.push_back(id);
-
-        return true;
-    }*/
     if (wayMap2.find(id) != wayMap2.end()) {
         return false;
     } else {
@@ -212,6 +190,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
         auto WAY = std::make_shared<Way2>();
         WAY->id = id;
         WAY->coords = coords;
+        WAY->length = calcWayLength(coords);
         wayMap2.insert(std::make_pair(id, WAY));
         wayVector.push_back(id);
         auto CROSSROAD1 = std::make_shared<Crossroad>();
@@ -240,22 +219,6 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
 
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 {
-    /*std::vector<std::pair<WayID, Coord>> waysFromCoord;
-
-    for (auto x : wayMap) {
-        if (x.second.first->coord == xy) {
-            auto pair = std::make_pair(x.first, x.second.first->leafNode->coord);
-            waysFromCoord.push_back(pair);
-        }
-        if (x.second.first->leafNode->coord == xy) {
-            auto pair = std::make_pair(x.first, x.second.first->coord);
-            waysFromCoord.push_back(pair);
-        }
-    }
-    if (waysFromCoord.size() > 0) {
-        return waysFromCoord;
-    }
-    return {};*/
     std::vector<std::pair<WayID, Coord>> waysFromCoord;
     if (crossroadMap.find(xy) == crossroadMap.end()) {
         return {};
@@ -277,11 +240,6 @@ std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 
 std::vector<Coord> Datastructures::get_way_coords(WayID id)
 {
-    /*if (wayMap.find(id) != wayMap.end()) {
-        return wayMap.at(id).second;
-    } else {
-        return { NO_COORD };
-    }*/
     if (wayMap2.find(id) != wayMap2.end()) {
         return wayMap2.at(id)->coords;
     } else {
@@ -299,8 +257,87 @@ void Datastructures::clear_ways()
 std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_any(Coord fromxy, Coord toxy)
 {
     // Replace this comment with your implementation
+    /*if (isRoutePossible(fromxy, toxy)) {
+        std::stack<std::shared_ptr<Way2>> s;
+        s.push(crossroadMap.at(fromxy)->ways.front());
+        while (!s.empty()) {
+            auto last = s.top();
+            s.pop();
+            if (last->color == "white") {
+                last->color = "gray";
+                s.push(last);
+                //std::shared_ptr<Way2> v = last;
+                for (auto v : crossroadMap.at(last->coords.front())->ways) {
+
+                    if (v->color == "white") {
+                        s.push(v);
+
+                    } else if (v->color == "gray") {
+                        std::cout << s.top()->id << std::endl;
+                    }
+                }
+            } else {
+                last->color = "black";
+            }
+        }
+    }*/
     if (isRoutePossible(fromxy, toxy)) {
+        /*std::stack<std::shared_ptr<Crossroad>> s;
+        s.push(crossroadMap.at(fromxy));
+        while (!s.empty()) {
+            auto last = s.top();
+            s.pop();
+            if (last->color == "white") {
+                std::cout << "lol" << std::endl;
+                last->color = "gray";
+                s.push(last);
+                //std::shared_ptr<Way2> v = last;
+                for (auto v : crossroadMap.at(last->coord)->ways) {
+
+                    if (crossroadMap.at(v->coords.back())->color == "white") {
+                        s.push(crossroadMap.at(v->coords.back()));
+
+                    } else if (crossroadMap.at(v->coords.back())->color == "gray") {
+                        //std::cout << s.top()->id << std::endl;
+                    }
+                }
+                for (auto v : crossroadMap.at(last->coord)->ways) {
+
+                    if (crossroadMap.at(v->coords.front())->color == "white") {
+                        s.push(crossroadMap.at(v->coords.front()));
+
+                    } else if (crossroadMap.at(v->coords.front())->color == "gray") {
+                        //std::cout << s.top()->id << std::endl;
+                    }
+                }
+            } else {
+                last->color = "black";
+            }
+        }*/
+        auto stack = dfs(fromxy, toxy);
+        std::vector<std::tuple<Coord, WayID, Distance>> route;
+        Distance distance = 0;
+        WayID wayID = "null";
+
+        auto tempStack = stack;
+        if (stack.size() != 0) {
+            std::stack<std::shared_ptr<Crossroad>> tempStack;
+            while (stack.size() > 0) {
+                tempStack.push(stack.top());
+                stack.pop();
+            }
+            stack = tempStack;
+            while (stack.size() > 0) {
+                auto values = std::make_tuple(stack.top()->coord, wayID, distance);
+                route.push_back(values);
+                distance += stack.top()->distFromPrev;
+                stack.pop();
+            }
+            clearVisits();
+            return route;
+        }
     }
+    clearVisits();
     return { { NO_COORD, NO_WAY, NO_DISTANCE } };
 }
 
@@ -343,4 +380,60 @@ bool Datastructures::isRoutePossible(Coord fromxy, Coord toxy)
         return false;
     }
     return true;
+}
+
+void Datastructures::clearVisits()
+{
+    for (auto x : crossroadMap) {
+        x.second->color = "white";
+        x.second->distFromPrev = 0;
+    }
+}
+
+std::stack<std::shared_ptr<Crossroad>> Datastructures::dfs(Coord fromxy, Coord toxy)
+{
+    std::stack<std::shared_ptr<Crossroad>> s;
+    s.push(crossroadMap.at(fromxy));
+    while (!s.empty()) {
+        auto last = s.top();
+        s.pop();
+        if (last->color == "white") {
+            if (last->coord == toxy) {
+                s.push(last);
+                return s;
+            }
+
+            last->color = "gray";
+            s.push(last);
+            auto possibleCoords = ways_from(last->coord);
+            bool broke = 0;
+            for (auto v : possibleCoords) {
+
+                if (crossroadMap.at(v.second)->color == "white") {
+                    last->distFromPrev = wayMap2.at(v.first)->length;
+                    s.push(crossroadMap.at(v.second));
+                    broke = 1;
+                    break;
+                }
+            }
+            if (!broke) {
+                s.pop();
+                s.top()->color = "white";
+            }
+
+        } else {
+            last->color = "black";
+        }
+    }
+    return s;
+}
+
+Distance Datastructures::calcWayLength(std::vector<Coord> coords)
+{
+
+    Distance distance = 0;
+    for (unsigned long long i = 0; i < coords.size() - 1; i++) {
+        distance += floor(sqrt(pow((coords[i].x - coords[i + 1].x), 2) + pow((coords[i].y - coords[i + 1].y), 2)));
+    }
+    return distance;
 }

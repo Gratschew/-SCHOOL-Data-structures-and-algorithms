@@ -7,6 +7,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <stack>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -47,28 +48,6 @@ struct Coord {
     int y = NO_VALUE;
 };
 
-struct Way2 {
-    WayID id;
-    std::vector<Coord> coords;
-};
-
-struct Way {
-    std::shared_ptr<Way> prevNode;
-    std::shared_ptr<Way> nextNode;
-    std::shared_ptr<Way> leafNode;
-    Coord coord;
-    std::vector<std::shared_ptr<Way>> waysStart; // ways that start from
-        // where this way ends
-
-    std::vector<std::shared_ptr<Way>> waysEnd; // ways that end from
-        // where this way ends
-};
-
-struct Crossroad {
-    Coord coord;
-    std::vector<std::shared_ptr<Way2>> ways;
-};
-
 // Example: Defining == and hash function for Coord so that it can be used
 // as key for std::unordered_map/set, if needed
 inline bool operator==(Coord c1, Coord c2) { return c1.x == c2.x && c1.y == c2.y; }
@@ -107,6 +86,18 @@ using Distance = int;
 // Return value for cases where Duration is unknown
 Distance const NO_DISTANCE = NO_VALUE;
 
+struct Way2 {
+    WayID id;
+    std::vector<Coord> coords;
+    Distance length;
+};
+
+struct Crossroad {
+    Coord coord;
+    std::vector<std::shared_ptr<Way2>> ways;
+    std::string color = "white";
+    Distance distFromPrev;
+};
 // This is the class you are supposed to implement
 
 class Datastructures {
@@ -259,10 +250,13 @@ public:
     // Estimate of performance:
     // Short rationale for estimate:
     Distance trim_ways();
-
-    bool isRoutePossible(Coord fromxy, Coord toxy);
+    std::stack<std::shared_ptr<Crossroad>> dfs(Coord fromxy, Coord toxy);
+    Distance calcWayLength(std::vector<Coord> coords);
 
 private:
+    bool isRoutePossible(Coord fromxy, Coord toxy);
+    void clearVisits();
+    //std::stack<std::shared_ptr<Crossroad>> dfs(Coord fromxy, Coord toxy);
     std::vector<WayID> wayVector;
     //std::unordered_map<WayID, std::pair<std::shared_ptr<Way>, std::vector<Coord>>> wayMap;
 
