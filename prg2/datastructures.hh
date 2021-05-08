@@ -7,6 +7,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <queue>
 #include <stack>
 #include <string>
 #include <tuple>
@@ -97,6 +98,9 @@ struct Crossroad {
     std::vector<std::shared_ptr<Way2>> ways;
     std::string color = "white";
     Distance distFromPrev;
+    std::shared_ptr<Crossroad> prevCrossroad;
+    int etaisyys = 0;
+    WayID wayUsed;
 };
 // This is the class you are supposed to implement
 
@@ -252,6 +256,7 @@ public:
     Distance trim_ways();
     std::stack<std::shared_ptr<Crossroad>> dfs(Coord fromxy, Coord toxy);
     Distance calcWayLength(std::vector<Coord> coords);
+    bool bfs(Coord fromxy, Coord toxy);
 
 private:
     bool isRoutePossible(Coord fromxy, Coord toxy);

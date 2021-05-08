@@ -6,6 +6,7 @@
 
 #include "iostream"
 #include <cmath>
+#include <queue>
 #include <stack>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
@@ -349,7 +350,38 @@ bool Datastructures::remove_way(WayID id)
 
 std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_least_crossroads(Coord fromxy, Coord toxy)
 {
-    // Replace this comment with your implementation
+    std::vector<std::tuple<Coord, WayID, Distance>> route;
+    if (isRoutePossible(fromxy, toxy)) {
+        if (bfs(fromxy, toxy)) {
+            Distance distance = 0;
+            WayID wayID = "null";
+            auto crossRoad = crossroadMap.at(toxy);
+            /* while (crossRoad->coord != fromxy) {
+                auto values = std::make_tuple(crossRoad->coord, crossRoad->wayUsed, distance);
+                route.push_back(values);
+                crossRoad = crossRoad->prevCrossroad;
+            }*/
+            //testread "simpletest-all-in.txt" "simpletest-all-out.txt"
+            auto crossRoadInFront = crossRoad;
+            auto values = std::make_tuple(crossRoad->coord, NO_WAY, crossRoad->distFromPrev);
+            route.push_back(values);
+            crossRoad = crossRoad->prevCrossroad;
+            while (true) {
+
+                auto values = std::make_tuple(crossRoad->coord, crossRoadInFront->wayUsed, crossRoad->distFromPrev);
+                route.push_back(values);
+                if (crossRoad->coord == fromxy) {
+                    break;
+                }
+                crossRoad = crossRoad->prevCrossroad;
+                crossRoadInFront = crossRoadInFront->prevCrossroad;
+            }
+            clearVisits();
+            std::reverse(route.begin(), route.end());
+            return route;
+        }
+    }
+    clearVisits();
     return { { NO_COORD, NO_WAY, NO_DISTANCE } };
 }
 
@@ -436,4 +468,38 @@ Distance Datastructures::calcWayLength(std::vector<Coord> coords)
         distance += floor(sqrt(pow((coords[i].x - coords[i + 1].x), 2) + pow((coords[i].y - coords[i + 1].y), 2)));
     }
     return distance;
+}
+
+bool Datastructures::bfs(Coord fromxy, Coord toxy)
+{
+    std::queue<std::shared_ptr<Crossroad>> d;
+    crossroadMap.at(fromxy)->color = "gray";
+    crossroadMap.at(fromxy)->etaisyys = 0;
+    d.push(crossroadMap.at(fromxy));
+
+    while (!d.empty()) {
+        auto u = d.front();
+        d.pop();
+        if (u->coord == toxy) {
+            std::cout << "loyty" << std::endl;
+            std::cout << u->prevCrossroad->coord.x << u->prevCrossroad->coord.y << std::endl;
+
+            return true;
+        }
+        auto possibleCoords = ways_from(u->coord);
+        for (auto v : possibleCoords) {
+            if (crossroadMap.at(v.second)->color == "white") {
+                crossroadMap.at(v.second)->color = "gray";
+                crossroadMap.at(v.second)->prevCrossroad = u;
+                crossroadMap.at(v.second)->distFromPrev = u->distFromPrev + wayMap2.at(v.first)->length;
+                crossroadMap.at(v.second)->wayUsed = v.first;
+                //last->distFromPrev = wayMap2.at(v.first)->length;
+                //s.push(crossroadMap.at(v.second));
+                d.push(crossroadMap.at(v.second));
+            }
+        }
+        u->color = "black";
+    }
+
+    return false;
 }
