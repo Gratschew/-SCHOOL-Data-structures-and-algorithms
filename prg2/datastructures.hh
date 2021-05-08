@@ -87,7 +87,7 @@ using Distance = int;
 // Return value for cases where Duration is unknown
 Distance const NO_DISTANCE = NO_VALUE;
 
-struct Way2 {
+struct Way {
     WayID id;
     std::vector<Coord> coords;
     Distance length;
@@ -95,11 +95,11 @@ struct Way2 {
 
 struct Crossroad {
     Coord coord;
-    std::vector<std::shared_ptr<Way2>> ways;
+    std::vector<std::shared_ptr<Way>> ways;
     std::string color = "white";
     Distance distFromPrev;
-    std::shared_ptr<Crossroad> prevCrossroad;
-    int etaisyys = 0;
+    std::shared_ptr<Crossroad> prevCrossroad; // for bfs
+    std::vector<std::shared_ptr<Crossroad>> prevCrossroads; // for dfsCycle
     WayID wayUsed;
 };
 // This is the class you are supposed to implement
@@ -257,15 +257,14 @@ public:
     std::stack<std::shared_ptr<Crossroad>> dfs(Coord fromxy, Coord toxy);
     Distance calcWayLength(std::vector<Coord> coords);
     bool bfs(Coord fromxy, Coord toxy);
+    std::stack<std::shared_ptr<Crossroad>> dfsCycle(Coord fromxy);
 
 private:
     bool isRoutePossible(Coord fromxy, Coord toxy);
     void clearVisits();
-    //std::stack<std::shared_ptr<Crossroad>> dfs(Coord fromxy, Coord toxy);
     std::vector<WayID> wayVector;
-    //std::unordered_map<WayID, std::pair<std::shared_ptr<Way>, std::vector<Coord>>> wayMap;
 
-    std::unordered_map<WayID, std::shared_ptr<Way2>> wayMap2;
+    std::unordered_map<WayID, std::shared_ptr<Way>> wayMap;
     std::unordered_map<Coord, std::shared_ptr<Crossroad>, CoordHash> crossroadMap;
 };
 
