@@ -98,7 +98,7 @@ struct Crossroad {
     std::vector<std::shared_ptr<Way>> ways;
     std::string color = "white";
     Distance distFromPrev = 0;
-    std::shared_ptr<Crossroad> prevCrossroad = nullptr; // for bfs
+    std::shared_ptr<Crossroad> prevCrossroad = nullptr; // for bfs and dijsktra
     std::vector<std::shared_ptr<Crossroad>> prevCrossroads; // for dfsCycle
     WayID wayUsed;
 };
@@ -209,65 +209,88 @@ public:
 
     // Phase 2 operations
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(1)
+    // Short rationale for estimate: Returns a vector
     std::vector<WayID> all_ways();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(1)
+    // Short rationale for estimate: Only pushback for a vector and insert and find for unordered_map used.
     bool add_way(WayID id, std::vector<Coord> coords);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(N)
+    // Short rationale for estimate: For loop to go through a vector
     std::vector<std::pair<WayID, Coord>> ways_from(Coord xy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(1)
+    // Short rationale for estimate: Only find used for an unoredered_map.
     std::vector<Coord> get_way_coords(WayID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(N)
+    // Short rationale for estimate: Linear in size, clear functions called for vector and unordered_maps.
     void clear_ways();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(V+E)
+    // Short rationale for estimate: Depth first search used, where V is vertices and E is edges.
     std::vector<std::tuple<Coord, WayID, Distance>> route_any(Coord fromxy, Coord toxy);
 
     // Non-compulsory operations
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(N)
+    // Short rationale for estimate: Linear in size, loops through unordered_maps and vectors.
     bool remove_way(WayID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(V+E)
+    // Short rationale for estimate: Breadth first search used, where V is vertices and E is edges.
     std::vector<std::tuple<Coord, WayID, Distance>> route_least_crossroads(Coord fromxy, Coord toxy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(V+E)
+    // Short rationale for estimate: Depth first search used, where V is vertices and E is edges.
     std::vector<std::tuple<Coord, WayID>> route_with_cycle(Coord fromxy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O((V+E)lgV)
+    // Short rationale for estimate: Dijkstra's algorithm implemented with a priority queue goes O(V) for while loop
+    // and O(E) for for-loop at max.
     std::vector<std::tuple<Coord, WayID, Distance>> route_shortest_distance(Coord fromxy, Coord toxy);
 
     // Estimate of performance:
     // Short rationale for estimate:
     Distance trim_ways();
-    std::stack<std::shared_ptr<Crossroad>> dfs(Coord fromxy, Coord toxy);
-    Distance calcWayLength(std::vector<Coord> coords);
-    bool bfs(Coord fromxy, Coord toxy);
-    std::stack<std::shared_ptr<Crossroad>> dfsCycle(Coord fromxy);
-    bool dijsktra(Coord fromxy, Coord toxy);
-    void relax(std::shared_ptr<Crossroad> u, std::shared_ptr<Crossroad> v, WayID way);
 
 private:
-    bool isRoutePossible(Coord fromxy, Coord toxy);
-    void clearVisits();
-    std::vector<WayID> wayVector;
+    // P H A S E 2  O P E R A T I O N S
+    // helper function to calculate waylength
+    Distance calcWayLength(std::vector<Coord> coords);
 
-    std::unordered_map<WayID, std::shared_ptr<Way>> wayMap;
-    std::unordered_map<Coord, std::shared_ptr<Crossroad>, CoordHash> crossroadMap;
+    // returns a truth value if coords are in the data
+    bool isRoutePossible(Coord fromxy, Coord toxy);
+
+    // depth first search using stack
+    std::stack<std::shared_ptr<Crossroad>> dfs(Coord fromxy, Coord toxy);
+
+    // depth first search to detect a cycle using stack
+    std::stack<std::shared_ptr<Crossroad>> dfsCycle(Coord fromxy);
+
+    // breadth first search
+    bool bfs(Coord fromxy, Coord toxy);
+
+    // dijsktra's algorithm implementation
+    bool dijkstra(Coord fromxy, Coord toxy);
+
+    // helper function for dijsktra's algorithm
+    void relax(std::shared_ptr<Crossroad> u, std::shared_ptr<Crossroad> v, WayID way);
+
+    // clears the visits in crossroads
+    void clearVisits();
+
+    // all ways in a map
+    std::vector<WayID> wayVector_;
+
+    // all ways in a map as WayID as key and ptr to the way as value
+    std::unordered_map<WayID, std::shared_ptr<Way>> wayMap_;
+
+    // all crossroads as coords as keys and pointer to crossroad as value, coordhash given
+    // so Coords can be used as keys.
+    std::unordered_map<Coord, std::shared_ptr<Crossroad>, CoordHash> crossroadMap_;
 };
 
 #endif // DATASTRUCTURES_HH
