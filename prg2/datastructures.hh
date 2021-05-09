@@ -97,8 +97,8 @@ struct Crossroad {
     Coord coord;
     std::vector<std::shared_ptr<Way>> ways;
     std::string color = "white";
-    Distance distFromPrev;
-    std::shared_ptr<Crossroad> prevCrossroad; // for bfs
+    Distance distFromPrev = 0;
+    std::shared_ptr<Crossroad> prevCrossroad = nullptr; // for bfs
     std::vector<std::shared_ptr<Crossroad>> prevCrossroads; // for dfsCycle
     WayID wayUsed;
 };
@@ -258,6 +258,8 @@ public:
     Distance calcWayLength(std::vector<Coord> coords);
     bool bfs(Coord fromxy, Coord toxy);
     std::stack<std::shared_ptr<Crossroad>> dfsCycle(Coord fromxy);
+    bool dijsktra(Coord fromxy, Coord toxy);
+    void relax(std::shared_ptr<Crossroad> u, std::shared_ptr<Crossroad> v, WayID way);
 
 private:
     bool isRoutePossible(Coord fromxy, Coord toxy);

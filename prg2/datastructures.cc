@@ -6,6 +6,7 @@
 
 #include "iostream"
 #include <cmath>
+#include <limits>
 #include <queue>
 #include <stack>
 
@@ -288,9 +289,6 @@ std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_any(Coord 
 bool Datastructures::remove_way(WayID id)
 {
     if (wayMap.find(id) != wayMap.end()) {
-        //std::vector<WayID> wayVector;
-        //std::unordered_map<WayID, std::shared_ptr<Way>> wayMap;
-        //std::unordered_map<Coord, std::shared_ptr<Crossroad>, CoordHash> crossroadMap;
         for (auto it = begin(wayVector); it != end(wayVector);) {
             if (*it == id) {
                 it = wayVector.erase(it);
@@ -306,13 +304,13 @@ bool Datastructures::remove_way(WayID id)
 
         auto it = beginCrossroad->ways.begin();
         while (it != beginCrossroad->ways.end()) {
-            // specify condition for removing element; in this case remove odd numbers
+            // specify condition for removing element;
             if (*it == wayMap.at(id)) {
                 // erase() invalidates the iterator, use returned iterator
                 it = beginCrossroad->ways.erase(it);
                 break;
             }
-            // Notice that iterator is incremented only on the else part (why?)
+            // Notice that iterator is incremented only on the else part
             else {
                 ++it;
             }
@@ -322,13 +320,13 @@ bool Datastructures::remove_way(WayID id)
         }
         it = endCrossroad->ways.begin();
         while (it != endCrossroad->ways.end()) {
-            // specify condition for removing element; in this case remove odd numbers
+            // specify condition for removing element;
             if (*it == wayMap.at(id)) {
                 // erase() invalidates the iterator, use returned iterator
                 it = endCrossroad->ways.erase(it);
                 break;
             }
-            // Notice that iterator is incremented only on the else part (why?)
+            // Notice that iterator is incremented only on the else part
             else {
                 ++it;
             }
@@ -406,7 +404,33 @@ std::vector<std::tuple<Coord, WayID>> Datastructures::route_with_cycle(Coord fro
 
 std::vector<std::tuple<Coord, WayID, Distance>> Datastructures::route_shortest_distance(Coord fromxy, Coord toxy)
 {
-    // Replace this comment with your implementation
+    std::vector<std::tuple<Coord, WayID, Distance>> route;
+    if (isRoutePossible(fromxy, toxy)) {
+        if (dijsktra(fromxy, toxy)) {
+            auto crossRoad = crossroadMap.at(toxy);
+
+            auto crossRoadInFront = crossRoad;
+            auto values = std::make_tuple(crossRoad->coord, NO_WAY, crossRoad->distFromPrev);
+            route.push_back(values);
+            crossRoad = crossRoad->prevCrossroad;
+            while (true) {
+
+                auto values = std::make_tuple(crossRoad->coord, crossRoadInFront->wayUsed, crossRoad->distFromPrev);
+                route.push_back(values);
+                if (crossRoad->coord == fromxy) {
+                    break;
+                }
+                crossRoad = crossRoad->prevCrossroad;
+                crossRoadInFront = crossRoadInFront->prevCrossroad;
+            }
+
+            clearVisits();
+            std::reverse(route.begin(), route.end());
+            return route;
+        }
+    }
+
+    clearVisits();
     return { { NO_COORD, NO_WAY, NO_DISTANCE } };
 }
 
@@ -548,7 +572,6 @@ std::stack<std::shared_ptr<Crossroad>> Datastructures::dfsCycle(Coord fromxy)
                 if (std::find(last->prevCrossroads.begin(), last->prevCrossroads.end(), crossroadMap.at(v.second)) == last->prevCrossroads.end()) {
                     s.push(crossroadMap.at(v.second));
                     last->wayUsed = v.first;
-                    std::cout << "Cycle found bitch YEET" << std::endl;
                     return s;
                 }
             }
@@ -570,4 +593,51 @@ std::stack<std::shared_ptr<Crossroad>> Datastructures::dfsCycle(Coord fromxy)
         }
     }
     return s;
+}
+
+bool Datastructures::dijsktra(Coord fromxy, Coord toxy)
+{
+
+    auto cmp = [](std::shared_ptr<Crossroad> left, std::shared_ptr<Crossroad> right) {
+        return (left->distFromPrev > right->distFromPrev);
+    };
+    std::priority_queue<std::shared_ptr<Crossroad>, std::vector<std::shared_ptr<Crossroad>>, decltype(cmp)> pq(cmp);
+
+    pq.push(crossroadMap.at(fromxy));
+    pq.top()->color = "gray";
+
+    for (auto x : crossroadMap) {
+        x.second->distFromPrev = std::numeric_limits<int>::max();
+    }
+
+    pq.top()->distFromPrev = 0;
+    while (!pq.empty()) {
+
+        auto u = pq.top();
+        pq.pop();
+        auto possibleCoords = ways_from(u->coord);
+        for (auto v : possibleCoords) {
+            if (crossroadMap.at(v.second)->color == "white") {
+                crossroadMap.at(v.second)->color = "gray";
+
+                pq.push(crossroadMap.at(v.second));
+            }
+            relax(u, crossroadMap.at(v.second), v.first);
+        }
+
+        u->color = "black";
+    }
+    if (crossroadMap.at(toxy)->prevCrossroad != nullptr) {
+        return true;
+    }
+    return false;
+}
+
+void Datastructures::relax(std::shared_ptr<Crossroad> u, std::shared_ptr<Crossroad> v, WayID way)
+{
+    if (v->distFromPrev > u->distFromPrev + wayMap.at(way)->length) {
+        v->distFromPrev = u->distFromPrev + wayMap.at(way)->length;
+        v->prevCrossroad = u;
+        v->wayUsed = way;
+    }
 }
