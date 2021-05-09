@@ -24,6 +24,7 @@ using WayID = std::string;
 PlaceID const NO_PLACE = -1;
 AreaID const NO_AREA = -1;
 WayID const NO_WAY = "!!No way!!";
+AreaID const NO_PARENT = -1;
 
 // Return value for cases where integer values were not found
 int const NO_VALUE = std::numeric_limits<int>::min();
@@ -86,7 +87,22 @@ using Distance = int;
 
 // Return value for cases where Duration is unknown
 Distance const NO_DISTANCE = NO_VALUE;
+// P H A S E 1
+struct Place {
+    Name name;
+    PlaceType type;
+    Coord coord;
+};
 
+struct Area {
+    Name name;
+    std::vector<Coord> coords;
+    std::vector<AreaID> subAreas;
+    bool isASubArea = false;
+    AreaID parent = NO_PARENT;
+};
+
+// P H A S E 2
 struct Way {
     WayID id;
     std::vector<Coord> coords;
@@ -102,7 +118,6 @@ struct Crossroad {
     std::vector<std::shared_ptr<Crossroad>> prevCrossroads; // for dfsCycle
     WayID wayUsed;
 };
-// This is the class you are supposed to implement
 
 class Datastructures {
 public:
@@ -257,7 +272,13 @@ public:
     Distance trim_ways();
 
 private:
+    // PHASE 1 OPERATIONS
+    bool coordCompare(PlaceID a, PlaceID b);
+    void recSubAreas(AreaID id, std::vector<AreaID>& vec);
+    bool twoPointDistance(PlaceID id1, PlaceID id2, Coord compared);
+
     // P H A S E 2  O P E R A T I O N S
+    // Time complexities are taken in considerations in the functions that use these.
     // helper function to calculate waylength
     Distance calcWayLength(std::vector<Coord> coords);
 
@@ -282,6 +303,21 @@ private:
     // clears the visits in crossroads
     void clearVisits();
 
+    // P H A S E 1
+    // Datastructure for the places
+    std::unordered_map<PlaceID, Place> placeMap;
+    std::vector<PlaceID> placeidsName_;
+    std::vector<PlaceID> placeidsCoord_;
+
+    // Boolean values if the placeids vectors are sorted or not
+    bool sortedCoord_ = false;
+    bool sortedAlpha_ = false;
+
+    // Datastructure for the areas
+    std::unordered_map<AreaID, Area> areaMap;
+    std::vector<AreaID> areaids;
+
+    // P H A S E 2
     // all ways in a map
     std::vector<WayID> wayVector_;
 
